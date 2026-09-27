@@ -562,6 +562,8 @@
       <strong>This is a prior, not a universal theorem.</strong> The standard flow loss itself does not say “use the first PCs.” The argument depends on an isotropic-noise model and a finite-capacity proxy. Model approximation error can be anisotropic, a non-leading PCA block can occasionally work better, and auxiliary objectives can value directions by visual function rather than by variance. That is precisely why MFlow initializes from variance but keeps every \(m_i\) learnable.
     </div>
 
+    <p><strong>What do we mean by a velocity budget?</strong> We use \(B_{\mathrm{soft}}:=\operatorname{tr}(M)=\sum_i m_i\), a soft effective rank that equals the exact rank for binary AsymFlow masks but varies continuously for MFlow; this continuity, and the absence of an arbitrary threshold, is why it is the quantity constrained in the derivation above. For reporting, one could instead define \(B_{\mathrm{cutoff}}(\tau):=\sum_i\mathbf 1[m_i>\tau]\), which counts only directions whose gains exceed a tolerance such as \(\tau=10^{-2}\). Under the same convention, k-Diff is still all-or-nothing in rank: because its shared noise coefficient is \(1-k\), \(B_{\mathrm{cutoff}}^{\mathrm{k\text{-}Diff}}(\tau)=D\) when \(1-k>\tau\) and \(0\) otherwise (so at \(\tau=10^{-2}\), the switch occurs at \(k=0.99\)). Thus k-Diff can shrink the coefficient globally, but cannot allocate a fixed-rank budget to selected directions.</p>
+
     <h2 id="lpips-dip">Why does LPIPS bend the M-curve?</h2>
     <p>On ImageNet, adding a perceptual loss improves all three parameterizations in the controlled B-level comparison, but it helps MFlow the most:</p>
     <div class="table-wrap">
@@ -618,10 +620,11 @@
     \]</div>
     <p>The rebound at PC4 cannot be explained by variance alone: its directional variance is \(\lambda_4=3.74\), below both \(\lambda_2=9.41\) and \(\lambda_3=7.93\), yet LPIPS gives PC4 the larger gain. Nor is the behavior simply “LPIPS prefers color,” because several later chromatic modes are spatially non-uniform and do not receive the same increase.</p>
 
-    <p>A plausible explanation is <em>mean reversion</em>. Under finite-capacity squared-error regression, an uncertain clean-data component is pulled toward its conditional mean. For a spatially varying mode, that shrinkage may mainly smooth a local gradient or texture. For a patch-global mode, the same shrinkage can coherently shift the brightness, contrast, or color of the entire patch. Because LPIPS acts on the recovered image, it can make those coherent perceptual shifts relatively expensive. MFlow responds by keeping the affected patch-global directions more velocity-like, reducing the clean-data mean-reversion pressure there.</p>
+    <!-- <p>A plausible explanation is <em>mean reversion</em>. Under finite-capacity squared-error regression, an uncertain clean-data component is pulled toward its conditional mean. For a spatially varying mode, that shrinkage may mainly smooth a local gradient or texture. For a patch-global mode, the same shrinkage can coherently shift the brightness, contrast, or color of the entire patch. Because LPIPS acts on the recovered image, it can make those coherent perceptual shifts relatively expensive. MFlow responds by keeping the affected patch-global directions more velocity-like, reducing the clean-data mean-reversion pressure there.</p> -->
 
     <div class="note">
-      <strong>What the experiment establishes:</strong> LPIPS causes the non-monotonic M-curve, and the high-gain rebound aligns with patch-global modes. The mean-reversion story is a mechanistic interpretation of that alignment, not a causal claim proven by the ablation.
+      <strong>What the experiment establishes:</strong> LPIPS causes the non-monotonic M-curve, and the high-gain rebound aligns with patch-global modes. 
+      <!-- The mean-reversion story is a mechanistic interpretation of that alignment, not a causal claim proven by the ablation. -->
     </div>
 
     <section class="open-questions">
